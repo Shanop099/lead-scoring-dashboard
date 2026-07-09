@@ -1,0 +1,67 @@
+[
+  {
+    "id": 1,
+    "name": "Rahul Sharma",
+    "company": "Acme Technologies",
+    "designation": "CTO",
+    "industry": "SaaS",
+    "employees": 320,
+    "annual_revenue": "15M USD",
+    "budget": 120000,
+    "timeline": "1 month",
+    "engagement": "Booked Demo",
+    "location": "Bangalore"
+  },
+  {
+    "id": 2,
+    "name": "Priya Singh",
+    "company": "NextRetail",
+    "designation": "Marketing Manager",
+    "industry": "Retail",
+    "employees": 85,
+    "annual_revenue": "3M USD",
+    "budget": 25000,
+    "timeline": "6 months",
+    "engagement": "Downloaded Whitepaper",
+    "location": "Delhi"
+  },
+  {
+    "id": 3,
+    "name": "Arjun Patel",
+    "company": "FinEdge",
+    "designation": "Founder",
+    "industry": "FinTech",
+    "employees": 42,
+    "annual_revenue": "6M USD",
+    "budget": 65000,
+    "timeline": "2 months",
+    "engagement": "Requested Pricing",
+    "location": "Mumbai"
+  },
+  {
+    "id": 4,
+    "name": "Sneha Verma",
+    "company": "EduSmart",
+    "designation": "CEO",
+    "industry": "EdTech",
+    "employees": 230,
+    "annual_revenue": "10M USD",
+    "budget": 90000,
+    "timeline": "Immediate",
+    "engagement": "Multiple Meetings",
+    "location": "Hyderabad"
+  },
+  {
+    "id": 5,
+    "name": "Vikram Joshi",
+    "company": "LogiMove",
+    "designation": "Operations Head",
+    "industry": "Logistics",
+    "employees": 610,
+    "annual_revenue": "28M USD",
+    "budget": 150000,
+    "timeline": "3 months",
+    "engagement": "Cold Outreach",
+    "location": "Pune"
+  }
+]
