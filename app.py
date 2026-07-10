@@ -6,28 +6,26 @@ import plotly.express as px
 from scorer import score_all
 
 
-# -----------------------------
-# Page Config
-# -----------------------------
+# ----------------------------------------------------
+# PAGE CONFIG
+# ----------------------------------------------------
 
 st.set_page_config(
     page_title="AI Lead Scoring Dashboard",
-    page_icon="📈",
+    page_icon="🏠",
     layout="wide"
 )
 
+st.title("🏠 AI Lead Scoring Dashboard")
+st.caption("Groq-powered Real Estate Lead Prioritization")
 
-st.title("📈 AI Lead Scoring Dashboard")
-st.caption("Lead Prioritization using Groq LLM")
 
-
-# -----------------------------
-# Load Leads
-# -----------------------------
+# ----------------------------------------------------
+# LOAD LEADS
+# ----------------------------------------------------
 
 @st.cache_data
 def load_leads():
-
     with open("leads.json", "r") as f:
         return json.load(f)
 
@@ -35,11 +33,11 @@ def load_leads():
 raw_leads = load_leads()
 
 
-# -----------------------------
-# Sidebar
-# -----------------------------
+# ----------------------------------------------------
+# SIDEBAR
+# ----------------------------------------------------
 
-st.sidebar.header("Controls")
+st.sidebar.title("Dashboard Controls")
 
 score_button = st.sidebar.button(
     "🚀 Score Leads",
@@ -53,132 +51,157 @@ priority_filter = st.sidebar.multiselect(
 )
 
 search = st.sidebar.text_input(
-    "Search Company / Person"
+    "Search by Name / Project"
 )
 
 
-# -----------------------------
-# Session State
-# -----------------------------
+# ----------------------------------------------------
+# SESSION STATE
+# ----------------------------------------------------
 
 if "results" not in st.session_state:
     st.session_state.results = []
 
 
-# -----------------------------
-# AI Scoring
-# -----------------------------
+# ----------------------------------------------------
+# SCORE LEADS
+# ----------------------------------------------------
 
 if score_button:
 
-    with st.spinner("Groq is evaluating leads..."):
+    with st.spinner("Analyzing leads using Groq..."):
 
         st.session_state.results = score_all(raw_leads)
 
-        st.success("Lead scoring completed!")
+    st.success("Lead scoring completed successfully!")
 
 
 results = st.session_state.results
 
 
-# -----------------------------
-# No Results
-# -----------------------------
+# ----------------------------------------------------
+# WAIT FOR USER
+# ----------------------------------------------------
 
 if len(results) == 0:
 
-    st.info("Press **Score Leads** to begin.")
+    st.info(
+        "Click **🚀 Score Leads** to analyze the provided leads."
+    )
 
     st.stop()
 
 
-# -----------------------------
-# DataFrame
-# -----------------------------
+# ----------------------------------------------------
+# DATAFRAME
+# ----------------------------------------------------
 
 df = pd.DataFrame(results)
 
 
-# -----------------------------
-# Search
-# -----------------------------
+# ----------------------------------------------------
+# SEARCH
+# ----------------------------------------------------
 
 if search:
 
-    search = search.lower()
+    query = search.lower()
 
     df = df[
-        df["name"].str.lower().str.contains(search)
+        df["name"].str.lower().str.contains(query)
         |
-        df["company"].str.lower().str.contains(search)
+        df["project"].str.lower().str.contains(query)
     ]
 
 
-# -----------------------------
-# Priority Filter
-# -----------------------------
+# ----------------------------------------------------
+# PRIORITY FILTER
+# ----------------------------------------------------
 
-df = df[df["priority"].isin(priority_filter)]
+df = df[
+    df["priority"].isin(priority_filter)
+]
 
 
-# -----------------------------
-# Metrics
-# -----------------------------
+# ----------------------------------------------------
+# KPI METRICS
+# ----------------------------------------------------
 
-total = len(df)
+total_leads = len(df)
 
-average = round(df["score"].mean(), 1)
+average_score = round(
+    df["score"].mean(),
+    1
+)
 
-high = len(df[df["priority"] == "High"])
+high_priority = len(
+    df[df["priority"] == "High"]
+)
 
-pipeline = int(df["budget"].sum())
+ready_to_contact = high_priority
 
 
 c1, c2, c3, c4 = st.columns(4)
 
 c1.metric(
     "Total Leads",
-    total
+    total_leads
 )
 
 c2.metric(
     "Average Score",
-    average
+    average_score
 )
 
 c3.metric(
     "High Priority",
-    high
+    high_priority
 )
 
 c4.metric(
-    "Pipeline Budget",
-    f"${pipeline:,}"
+    "Ready To Contact",
+    ready_to_contact
 )
 
-
 st.divider()
+# ----------------------------------------------------
+# SORT LEADS
+# ----------------------------------------------------
 
+df = df.sort_values(
+    by="score",
+    ascending=False
+)
 
-# -----------------------------
-# Charts
-# -----------------------------
+# ----------------------------------------------------
+# CHARTS
+# ----------------------------------------------------
 
 left, right = st.columns(2)
 
-
 with left:
 
-    fig = px.bar(
+    bar = px.bar(
         df,
-        x="company",
+        x="name",
         y="score",
         color="priority",
-        title="Lead Scores"
+        hover_data=[
+            "project",
+            "phone"
+        ],
+        title="Lead Scores",
+        text="score"
+    )
+
+    bar.update_layout(
+        xaxis_title="Lead",
+        yaxis_title="AI Score",
+        legend_title="Priority"
     )
 
     st.plotly_chart(
-        fig,
+        bar,
         use_container_width=True
     )
 
@@ -196,62 +219,121 @@ with right:
         use_container_width=True
     )
 
-
 st.divider()
 
+# ----------------------------------------------------
+# LEAD OVERVIEW
+# ----------------------------------------------------
 
-# -----------------------------
-# Table
-# -----------------------------
+st.subheader("📋 Lead Overview")
 
-st.subheader("Lead Overview")
-
-table = df[
+overview = df[
     [
+        "id",
         "name",
-        "company",
-        "designation",
+        "phone",
+        "project",
         "score",
-        "priority",
-        "budget"
+        "priority"
     ]
-].sort_values(
-    "score",
-    ascending=False
-)
+]
 
 st.dataframe(
-    table,
+    overview,
     use_container_width=True,
     hide_index=True
 )
 
+st.divider()
+
+# ----------------------------------------------------
+# PROJECT SUMMARY
+# ----------------------------------------------------
+
+st.subheader("🏢 Project Summary")
+
+project_summary = (
+    df.groupby("project")
+      .agg(
+          Leads=("id", "count"),
+          AvgScore=("score", "mean")
+      )
+      .reset_index()
+)
+
+project_summary["AvgScore"] = (
+    project_summary["AvgScore"]
+    .round(1)
+)
+
+st.dataframe(
+    project_summary,
+    use_container_width=True,
+    hide_index=True
+)
 
 st.divider()
 
-st.subheader("Lead Details")
-# -----------------------------
-# Lead Details
-# -----------------------------
+# ----------------------------------------------------
+# DUPLICATE PHONE CHECK
+# ----------------------------------------------------
 
-priority_colors = {
-    "High": "🟢",
-    "Medium": "🟡",
-    "Low": "🔴",
-    "Unknown": "⚪"
-}
+duplicates = (
+    df.groupby("phone")
+      .size()
+      .reset_index(name="count")
+)
 
-for _, lead in df.sort_values("score", ascending=False).iterrows():
+duplicates = duplicates[
+    duplicates["count"] > 1
+]
 
-    color = priority_colors.get(
-        lead["priority"],
-        "⚪"
+if len(duplicates):
+
+    st.warning("⚠ Duplicate phone numbers detected.")
+
+    duplicate_df = (
+        df[df["phone"].isin(duplicates["phone"])]
+        .sort_values("phone")
     )
 
+    st.dataframe(
+        duplicate_df[
+            [
+                "name",
+                "phone",
+                "project",
+                "score"
+            ]
+        ],
+        hide_index=True,
+        use_container_width=True
+    )
+
+else:
+
+    st.success(
+        "No duplicate phone numbers found."
+    )
+
+st.divider()
+
+st.subheader("🤖 AI Lead Analysis")
+# ----------------------------------------------------
+# LEAD DETAILS
+# ----------------------------------------------------
+
+priority_badges = {
+    "High": "🟢 High Priority",
+    "Medium": "🟡 Medium Priority",
+    "Low": "🔴 Low Priority"
+}
+
+for _, lead in df.iterrows():
+
     title = (
-        f"{color} "
-        f"{lead['name']} "
-        f"— {lead['company']} "
+        f"{lead['name']} • "
+        f"{lead['project']} "
         f"({lead['score']}/100)"
     )
 
@@ -259,26 +341,31 @@ for _, lead in df.sort_values("score", ascending=False).iterrows():
 
         left, right = st.columns([2, 1])
 
+        # ----------------------------------
+        # Lead Information
+        # ----------------------------------
+
         with left:
 
-            st.markdown("### Company")
+            st.markdown("### 👤 Lead Information")
 
-            st.write(f"**Company:** {lead['company']}")
-            st.write(f"**Industry:** {lead['industry']}")
-            st.write(f"**Location:** {lead['location']}")
-            st.write(f"**Employees:** {lead['employees']}")
-            st.write(f"**Revenue:** {lead['annual_revenue']}")
-
-            st.markdown("### Contact")
-
+            st.write(f"**Lead ID:** {lead['id']}")
             st.write(f"**Name:** {lead['name']}")
-            st.write(f"**Designation:** {lead['designation']}")
+            st.write(f"**Phone:** {lead['phone']}")
+            st.write(f"**Project:** {lead['project']}")
 
-            st.markdown("### Opportunity")
+            st.markdown("### 💬 Customer Message")
 
-            st.write(f"**Budget:** ${lead['budget']:,}")
-            st.write(f"**Timeline:** {lead['timeline']}")
-            st.write(f"**Engagement:** {lead['engagement']}")
+            message = str(lead.get("message", "")).strip()
+
+            if message:
+                st.info(message)
+            else:
+                st.warning("No message provided.")
+
+        # ----------------------------------
+        # Score Section
+        # ----------------------------------
 
         with right:
 
@@ -291,26 +378,35 @@ for _, lead in df.sort_values("score", ascending=False).iterrows():
                 int(lead["score"])
             )
 
-            st.metric(
-                "Priority",
-                lead["priority"]
+            st.write(
+                priority_badges.get(
+                    lead["priority"],
+                    lead["priority"]
+                )
             )
 
         st.markdown("---")
 
-        st.markdown("### 🤖 AI Reasoning")
+        # ----------------------------------
+        # AI Reasoning
+        # ----------------------------------
+
+        st.markdown("### 🧠 AI Reasoning")
 
         reasons = lead.get("reason", [])
 
         if isinstance(reasons, list):
 
-            for item in reasons:
-                st.write(f"• {item}")
+            for reason in reasons:
+                st.write(f"✅ {reason}")
 
-        else:
+        elif reasons:
             st.write(reasons)
 
-        st.markdown("### 🎯 Recommended Next Action")
+        else:
+            st.write("No reasoning available.")
+
+        st.markdown("### 📞 Recommended Next Action")
 
         st.success(
             lead.get(
@@ -319,15 +415,287 @@ for _, lead in df.sort_values("score", ascending=False).iterrows():
             )
         )
 
-        st.markdown("---")
+        # ----------------------------------
+        # Duplicate Detection
+        # ----------------------------------
 
+        duplicate_count = len(
+            df[df["phone"] == lead["phone"]]
+        )
 
-# -----------------------------
-# Footer
-# -----------------------------
+        if duplicate_count > 1:
+
+            st.warning(
+                f"⚠ Duplicate enquiry detected.\n\n"
+                f"This phone number appears "
+                f"{duplicate_count} times."
+            )
+
+            duplicates = df[
+                df["phone"] == lead["phone"]
+            ][
+                [
+                    "name",
+                    "project",
+                    "score",
+                    "priority"
+                ]
+            ]
+
+            st.dataframe(
+                duplicates,
+                use_container_width=True,
+                hide_index=True
+            )
+
+        st.divider()
+
+        # ----------------------------------------------------
+# AI INSIGHTS
+# ----------------------------------------------------
+
+st.header("📊 AI Insights")
+
+c1, c2 = st.columns(2)
+
+# ----------------------------------------------------
+# HIGH PRIORITY
+# ----------------------------------------------------
+
+with c1:
+
+    st.subheader("🟢 High Priority Leads")
+
+    high_df = df[
+        df["priority"] == "High"
+    ]
+
+    if len(high_df):
+
+        for _, row in high_df.iterrows():
+
+            st.success(
+                f"""
+**{row['name']}**
+
+📞 {row['phone']}
+
+🏠 {row['project']}
+
+⭐ Score : {row['score']}
+"""
+            )
+
+    else:
+
+        st.info(
+            "No High Priority Leads."
+        )
+
+# ----------------------------------------------------
+# LOW PRIORITY
+# ----------------------------------------------------
+
+with c2:
+
+    st.subheader("🔴 Low Priority Leads")
+
+    low_df = df[
+        df["priority"] == "Low"
+    ]
+
+    if len(low_df):
+
+        for _, row in low_df.iterrows():
+
+            st.warning(
+                f"""
+**{row['name']}**
+
+📞 {row['phone']}
+
+🏠 {row['project']}
+
+⭐ Score : {row['score']}
+"""
+            )
+
+    else:
+
+        st.info(
+            "No Low Priority Leads."
+        )
 
 st.divider()
 
+# ----------------------------------------------------
+# PROJECT ANALYTICS
+# ----------------------------------------------------
+
+st.header("🏢 Project Analytics")
+
+project_stats = (
+    df.groupby("project")
+    .agg(
+        Total_Leads=("id", "count"),
+        Average_Score=("score", "mean")
+    )
+    .reset_index()
+)
+
+project_stats["Average_Score"] = (
+    project_stats["Average_Score"]
+    .round(1)
+)
+
+st.dataframe(
+    project_stats,
+    hide_index=True,
+    use_container_width=True
+)
+
+fig = px.bar(
+    project_stats,
+    x="project",
+    y="Average_Score",
+    text="Average_Score",
+    title="Average Lead Score per Project"
+)
+
+st.plotly_chart(
+    fig,
+    use_container_width=True
+)
+
+st.divider()
+
+# ----------------------------------------------------
+# OVERALL AI SUMMARY
+# ----------------------------------------------------
+
+st.header("🧠 AI Summary")
+
+highest = df.loc[df["score"].idxmax()]
+lowest = df.loc[df["score"].idxmin()]
+
+left, right = st.columns(2)
+
+with left:
+
+    st.info(
+        f"""
+### Highest Quality Lead
+
+**Name:** {highest['name']}
+
+**Project:** {highest['project']}
+
+**Score:** {highest['score']}
+
+**Priority:** {highest['priority']}
+"""
+    )
+
+with right:
+
+    st.warning(
+        f"""
+### Lowest Quality Lead
+
+**Name:** {lowest['name']}
+
+**Project:** {lowest['project']}
+
+**Score:** {lowest['score']}
+
+**Priority:** {lowest['priority']}
+"""
+    )
+
+st.divider()
+# ----------------------------------------------------
+# DOWNLOAD RESULTS
+# ----------------------------------------------------
+
+st.header("📥 Export Results")
+
+export_df = df.copy()
+
+# Convert AI reasons list into readable text
+if "reason" in export_df.columns:
+    export_df["reason"] = export_df["reason"].apply(
+        lambda x: ", ".join(x) if isinstance(x, list) else str(x)
+    )
+
+csv = export_df.to_csv(index=False).encode("utf-8")
+
+st.download_button(
+    label="⬇ Download Scored Leads (CSV)",
+    data=csv,
+    file_name="scored_leads.csv",
+    mime="text/csv",
+    use_container_width=True,
+)
+
+st.divider()
+
+# ----------------------------------------------------
+# DASHBOARD SUMMARY
+# ----------------------------------------------------
+
+st.header("📈 Dashboard Summary")
+
+high_count = len(df[df["priority"] == "High"])
+medium_count = len(df[df["priority"] == "Medium"])
+low_count = len(df[df["priority"] == "Low"])
+
+summary = f"""
+### AI Analysis Completed
+
+Total Leads Analyzed : **{len(df)}**
+
+🟢 High Priority : **{high_count}**
+
+🟡 Medium Priority : **{medium_count}**
+
+🔴 Low Priority : **{low_count}**
+
+Average Lead Score : **{round(df['score'].mean(),1)} / 100**
+"""
+
+st.markdown(summary)
+
+st.divider()
+
+# ----------------------------------------------------
+# FOOTER
+# ----------------------------------------------------
+
+st.markdown(
+    """
+---
+### 🚀 About this Dashboard
+
+This dashboard uses **Groq LLM** to intelligently analyze real estate enquiries
+and assign a lead score based on:
+
+- Customer buying intent
+- Urgency
+- Message quality
+- Conversion potential
+
+Features Included:
+
+- ✅ AI Lead Scoring
+- ✅ Priority Classification
+- ✅ Duplicate Phone Detection
+- ✅ AI Recommendations
+- ✅ Interactive Charts
+- ✅ Project-wise Analytics
+- ✅ CSV Export
+"""
+)
+
 st.caption(
-    "Built with ❤️ using Streamlit + Groq Llama 3.3 70B"
+    "Built with ❤️ using Streamlit + Groq"
 )
