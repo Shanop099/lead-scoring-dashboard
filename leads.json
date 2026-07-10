@@ -1,37 +1,67 @@
 [
   {
     "id": 1,
-    "name": "Rohan Mehta",
-    "phone": "9820011223",
-    "project": "Arkade Evoke",
-    "message": "Interested in 2BHK, please call"
+    "name": "Rahul Sharma",
+    "company": "Acme Technologies",
+    "designation": "CTO",
+    "industry": "SaaS",
+    "employees": 320,
+    "annual_revenue": "15M USD",
+    "budget": 120000,
+    "timeline": "1 month",
+    "engagement": "Booked Demo",
+    "location": "Bangalore"
   },
   {
     "id": 2,
-    "name": "Rohan M.",
-    "phone": "9820011223",
-    "project": "Arkade Evoke",
-    "message": "want 2bhk price"
+    "name": "Priya Singh",
+    "company": "NextRetail",
+    "designation": "Marketing Manager",
+    "industry": "Retail",
+    "employees": 85,
+    "annual_revenue": "3M USD",
+    "budget": 25000,
+    "timeline": "6 months",
+    "engagement": "Downloaded Whitepaper",
+    "location": "Delhi"
   },
   {
     "id": 3,
-    "name": "asdf asdf",
-    "phone": "0000000000",
-    "project": "Chandak Treesourus",
-    "message": "test test 123"
+    "name": "Arjun Patel",
+    "company": "FinEdge",
+    "designation": "Founder",
+    "industry": "FinTech",
+    "employees": 42,
+    "annual_revenue": "6M USD",
+    "budget": 65000,
+    "timeline": "2 months",
+    "engagement": "Requested Pricing",
+    "location": "Mumbai"
   },
   {
     "id": 4,
-    "name": "Priya Shah",
-    "phone": "9987744556",
-    "project": "Ariha Vincere",
-    "message": "Looking for 1BHK under 60L, urgent, moving from Andheri"
+    "name": "Sneha Verma",
+    "company": "EduSmart",
+    "designation": "CEO",
+    "industry": "EdTech",
+    "employees": 230,
+    "annual_revenue": "10M USD",
+    "budget": 90000,
+    "timeline": "Immediate",
+    "engagement": "Multiple Meetings",
+    "location": "Hyderabad"
   },
   {
     "id": 5,
-    "name": "Karan",
-    "phone": "9765432109",
-    "project": "Chandak Treesourus",
-    "message": ""
+    "name": "Vikram Joshi",
+    "company": "LogiMove",
+    "designation": "Operations Head",
+    "industry": "Logistics",
+    "employees": 610,
+    "annual_revenue": "28M USD",
+    "budget": 150000,
+    "timeline": "3 months",
+    "engagement": "Cold Outreach",
+    "location": "Pune"
   }
 ]
